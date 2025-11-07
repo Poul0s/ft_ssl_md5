@@ -1,0 +1,67 @@
+md5 constant 
+K[64]:
+	i in 0 -> 63:
+		K[i] = floor(2**32 * abs(sin(i + 1)))
+s[ 0..15] := { 7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22 }
+s[16..31] := { 5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20 }
+s[32..47] := { 4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23 }
+s[48..63] := { 6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21 }
+
+digestion: prend un hex 512bit (128 hchar)
+decoupe en fragments de 32bit (8 hchar) F[16]
+static A=F[0]
+static B=F[1]
+static C=F[2]
+static D=F[3]
+
+64 iteration (i):
+if i < 16:
+    j = i
+if i < 32:
+    j = (5*i + 1) % 16
+if i < 48:
+	j = (3*i + 5) % 16
+else:
+	j = (7*i) % 16
+
+B->C'
+C->D'
+D->A'
+B' = redbox(F(B, C, D, i) + A + fragment of current iteration F[j], i, B) // combine
+
+
+F fct (B C D i):
+  if i < 16:
+	return (B & C) | ((~B) & D)
+  if i < 32:
+    return (D & B) | ((~D) & C)
+  if i < 48:
+	return B ^ C ^ D
+  return C ^ (B | (~D))
+
+redBox fct (input, i, B):
+	res = input + K[i]
+	res = input << s[i]
+	res = input + B
+
+if end:
+	result = A' . B' . C' . D'
+else
+	A = A'
+	B = B'
+	C = C'
+	D = D'
+
+
+Padding function:
+	add '1' bit onto message, pad with '0' bit until blength is 448 % 512
+	to fill remaining 64 bit:
+		append original msg length in bits % 2**64 into message
+
+
+usage:
+pad message,
+for each 512 bloc, run digestion BUT is 
+	- ABCD static ?
+	- ABCD equal to ABCD0 (first fourth fragment of first  512 block)
+		at end of digestion add ABCD to ABCD0 (for each digestion or only from 2?)
