@@ -6,7 +6,7 @@
 /*   By: psalame <psalame@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/08 13:59:42 by psalame           #+#    #+#             */
-/*   Updated: 2025/11/08 15:30:57 by psalame          ###   ########.fr       */
+/*   Updated: 2025/11/08 15:59:24 by psalame          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,19 @@ uint32_t *ssl_32(uint8_t *msg,
 	return (hash);
 }
 
+static void print_no_nl(char *str, ssize_t len, int fd) {
+	ssize_t i = 0;
+	while (i < len) {
+		while (i < len && str[i] != '\n') {
+			i++;
+		}
+		write(fd, str, i);
+		str += i + 1;
+		len -= i + 1;
+		i = 0;
+	}
+}
+
 uint32_t	*ssl_32_fd(int fd,
 						int print_fd,
 						void (*digest_fct)(uint32_t *, uint32_t *),
@@ -115,7 +128,7 @@ uint32_t	*ssl_32_fd(int fd,
 			return (NULL);
 		}
 		if (print_fd > 0 && readBytes > 0)
-			write(print_fd, buffer + bufferIndex, readBytes); // todo: else return as string to print without '\n' (use realloc until max size reached)
+			print_no_nl(buffer + bufferIndex, readBytes, print_fd);
 		bufferIndex += readBytes;
 
 		if (bufferIndex == 64) {
