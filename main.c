@@ -6,7 +6,7 @@
 /*   By: psalame <psalame@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/07 21:10:22 by psalame           #+#    #+#             */
-/*   Updated: 2025/11/08 15:34:54 by psalame          ###   ########.fr       */
+/*   Updated: 2025/11/08 15:49:09 by psalame          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 #include "libft/header/ft_string.h"
 #include "libft/header/ft_print.h"
 
-static void print_hex16(const uint8_t *d, int size) {
+static void print_hex(const uint8_t *d, int size) {
 	static const char hexd[] = "0123456789abcdef";
 	for (int i = 0; i < size * 4; i++) {
 		write(1, hexd + (d[i] >> 4), 1);
@@ -45,13 +45,18 @@ static void print_res(const uint8_t *d, const char *input, const char *algo_name
 		else
 			ft_putstr_fd("= ", 1);
 	}
-	print_hex16(d, algo_size);
+	print_hex(d, algo_size);
 	if (flags & FLAG_REVERSE && !(flags & FLAG_QUIET))
 		ft_printf(is_file ? " %s\n" : " \"%s\"\n", input);
 	else
 		ft_putchar_fd('\n', 1);
 }
 
+static void clean_exec_name(char *exec_name) {
+	char *last_slash = ft_strrchr(exec_name, '/');
+	if (last_slash)
+		ft_memmove(exec_name, last_slash + 1, ft_strlen(last_slash + 1) + 1);
+}
 
 int	main(int ac, char **av) {
 	int		flags;
@@ -60,6 +65,7 @@ int	main(int ac, char **av) {
 	int		hash_size;
 	int		optind = 2;
 
+	clean_exec_name(av[0]);
 	if (ac == 1) {
 		ft_printf("usage: %s command [flags] [file/string]\n", av[0]); // todo remove ./ (path of executable)
 		return 0;
@@ -106,7 +112,7 @@ int	main(int ac, char **av) {
 				ft_putchar_fd('\n', 1);
 			ft_dprintf(2, "%s: %s: failed to read from stdin\n", av[0], av[1]);
 		} else {
-			print_hex16((const uint8_t *)hash, hash_size);
+			print_hex((const uint8_t *)hash, hash_size);
 			ft_putchar_fd('\n', 1);
 			free(hash);
 		}
@@ -154,19 +160,4 @@ int	main(int ac, char **av) {
 	}
 	
 	return 0;
-	
-	// uint32_t *hash;
-	// if (ac != 2)
-	// 	hash = ft_ssl_md5_fd(0);
-	// else {
-	// 	size_t len = strlen(av[1]);
-	// 	hash = ft_ssl_md5((uint8_t *)av[1], len);
-	// }
-	// if (!hash) {
-	// 	printf("error\n");
-	// 	return (1);
-	// }
-	// print_hex16((const uint8_t *)hash);
-	// free(hash);
-	// return (0);
 }
