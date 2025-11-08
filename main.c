@@ -6,7 +6,7 @@
 /*   By: psalame <psalame@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/07 21:10:22 by psalame           #+#    #+#             */
-/*   Updated: 2025/11/08 12:37:43 by psalame          ###   ########.fr       */
+/*   Updated: 2025/11/08 15:34:54 by psalame          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@
 #include "libft/header/ft_string.h"
 #include "libft/header/ft_print.h"
 
-static void print_hex16(const uint8_t *d) {
+static void print_hex16(const uint8_t *d, int size) {
 	static const char hexd[] = "0123456789abcdef";
-	for (int i = 0; i < 16; i++) {
+	for (int i = 0; i < size * 4; i++) {
 		write(1, hexd + (d[i] >> 4), 1);
 		write(1, hexd + (d[i] & 0x0F), 1);
 	}
@@ -33,7 +33,7 @@ static void print_upper(const char *str) {
 		ft_putchar_fd(ft_toupper(*str++), 1);
 }
 
-static void print_res(const uint8_t *d, const char *input, const char *algo_name, int flags, int is_file, int is_stdin) {
+static void print_res(const uint8_t *d, const char *input, const char *algo_name, int algo_size, int flags, int is_file, int is_stdin) {
 	if (!(flags & (FLAG_QUIET | FLAG_REVERSE))) {
 		if (!is_stdin) {
 			print_upper(algo_name);
@@ -45,7 +45,7 @@ static void print_res(const uint8_t *d, const char *input, const char *algo_name
 		else
 			ft_putstr_fd("= ", 1);
 	}
-	print_hex16(d);
+	print_hex16(d, algo_size);
 	if (flags & FLAG_REVERSE && !(flags & FLAG_QUIET))
 		ft_printf(is_file ? " %s\n" : " \"%s\"\n", input);
 	else
@@ -57,6 +57,7 @@ int	main(int ac, char **av) {
 	int		flags;
 	void	*(*algorithm)(uint8_t *msg, uint64_t len);
 	void	*(*algorithm_fd)(int fd, int print_fd);
+	int		hash_size;
 	int		optind = 2;
 
 	if (ac == 1) {
@@ -67,9 +68,11 @@ int	main(int ac, char **av) {
 	if (ft_strncmp(av[1], "md5", 4) == 0) {
 		algorithm = (void *(*)(uint8_t *, uint64_t))&ft_ssl_md5;
 		algorithm_fd = (void *(*)(int, int))&ft_ssl_md5_fd;
+		hash_size = 4;
 	} else if (ft_strncmp(av[1], "sha256", 7) == 0) {
-		algorithm = NULL;
-		algorithm_fd = NULL;
+		algorithm = (void *(*)(uint8_t *, uint64_t))&ft_ssl_sha256;
+		algorithm_fd = (void *(*)(int, int))&ft_ssl_sha256_fd;
+		hash_size = 8;
 	} else {
 		ft_dprintf(2, "%s: Error: '%s' is an invalid command.\n\nCommands:\nmd5\nsha256\n\nFlags:\n-p -q -r -n\n", av[0], av[1]);
 		return 1;
@@ -103,7 +106,7 @@ int	main(int ac, char **av) {
 				ft_putchar_fd('\n', 1);
 			ft_dprintf(2, "%s: %s: failed to read from stdin\n", av[0], av[1]);
 		} else {
-			print_hex16((const uint8_t *)hash);
+			print_hex16((const uint8_t *)hash, hash_size);
 			ft_putchar_fd('\n', 1);
 			free(hash);
 		}
@@ -115,7 +118,7 @@ int	main(int ac, char **av) {
 		if (!hash) {
 			ft_dprintf(2, "%s: %s: failed to process string\n", av[0], av[1]);
 		} else {
-			print_res((const uint8_t *)hash, av[optind], av[1], flags, 0, 0);
+			print_res((const uint8_t *)hash, av[optind], av[1], hash_size, flags, 0, 0);
 			free(hash);
 		}
 	}
@@ -125,7 +128,7 @@ int	main(int ac, char **av) {
 		if (!hash) {
 			ft_dprintf(2, "%s: %s: failed to read from stdin\n", av[0], av[1]);
 		} else {
-			print_res((const uint8_t *)hash, "stdin", av[1], flags, 1, 1);
+			print_res((const uint8_t *)hash, "stdin", av[1], hash_size, flags, 1, 1);
 			free(hash);
 		}
 	}
@@ -141,10 +144,11 @@ int	main(int ac, char **av) {
 			if (!hash) {
 				ft_dprintf(2, "%s: %s: %s: failed to read file\n", av[0], av[1], av[optind]);
 			} else {
-				print_res((const uint8_t *)hash, av[optind], av[1], flags, 1, 0);
+				print_res((const uint8_t *)hash, av[optind], av[1], hash_size, flags, 1, 0);
 				free(hash);
 			}
-			close(fd);
+			if (fd > 2)
+				close(fd);
 		}
 		optind++;
 	}

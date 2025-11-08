@@ -6,14 +6,14 @@
 /*   By: psalame <psalame@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/07 16:19:07 by psalame           #+#    #+#             */
-/*   Updated: 2025/11/08 12:39:00 by psalame          ###   ########.fr       */
+/*   Updated: 2025/11/08 14:48:34 by psalame          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ssl_md5.h"
 #include <stdlib.h>
 #include <unistd.h>
-#include "libft/header/libft.h"
+#include "../ssl_algorithm_Int.h"
 
 static char s[] = {
 	 7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,
@@ -41,56 +41,6 @@ static uint32_t K[] = {
 	0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391
 };
 
-static inline uint32_t	rotate_left(uint32_t x, unsigned char c)
-{
-	return (x << c) | (x >> (32 - c));
-}
-
-void	*ft_memcpy(void *dest, const void *src, size_t n)
-{
-	size_t	i;
-
-	if (dest == NULL && src == NULL && n != 0)
-		return (dest);
-	i = 0;
-	while (i < n)
-	{
-		((unsigned char *)dest)[i] = ((unsigned char *)src)[i];
-		i++;
-	}
-	return (dest);
-}
-
-void	*ft_memset(void *s, int c, size_t n)
-{
-	size_t	i;
-
-	i = 0;
-	while (i < n)
-		((unsigned char *)s)[i++] = c;
-	return (s);
-}
-
-static uint64_t	pad_msg(uint8_t *msg, uint64_t len, uint8_t **new_msg, uint64_t fullLen)
-{
-	uint64_t targetLen = len + 1;
-	while ((targetLen % 64) != 56)
-		targetLen++;
-	targetLen += 8;
-
-	*new_msg = malloc(targetLen);
-	if (!*new_msg)
-		return (0);
-		
-	ft_memcpy(*new_msg, msg, len);
-	(*new_msg)[len] = 0x80; // 0b10000000
-	ft_memset(*new_msg + len + 1, 0, targetLen - len - 1 - 8);
-
-	for (uint64_t i = 0; i < 8; i++)
-		(*new_msg)[targetLen - 8 + i] = (uint8_t)((fullLen * 8) >> (8 * i)) & 0xFF;
-
-	return targetLen;
-}
 
 static uint32_t F(uint32_t B, uint32_t C, uint32_t D, char i)
 {
@@ -140,74 +90,19 @@ static void	digest_loop(uint32_t *msg, uint32_t *hash)
 	hash[3] += D;
 }
 
-uint32_t	*ft_ssl_md5(uint8_t *msg, uint64_t len)
-{
-	uint8_t	*new_msg;
-	uint64_t new_len = pad_msg(msg, len, &new_msg, len);
-	if (!new_msg)
-		return (NULL);
-
-	uint32_t	*hash = malloc(4 * sizeof(uint32_t));
-	if (!hash) {
-		free(new_msg);
-		return (NULL);
-	}
-
+static void md5_hash_constant_filler(uint32_t *hash) {
 	hash[0] = 0x67452301;
 	hash[1] = 0xEFCDAB89;
 	hash[2] = 0x98BADCFE;
 	hash[3] = 0x10325476;
-
-	for (uint64_t i = 0; i < new_len; i += 64)
-		digest_loop((uint32_t *)(new_msg + i), hash);
-
-	free(new_msg);
-	return (hash);
 }
 
-#include <stdio.h>
+uint32_t	*ft_ssl_md5(uint8_t *msg, uint64_t len)
+{
+	return ssl_32(msg, len, &digest_loop, 4, &md5_hash_constant_filler, 0);
+}
+
 uint32_t	*ft_ssl_md5_fd(int fd, int print_fd)
 {
-	uint32_t	*hash = malloc(4 * sizeof(uint32_t));
-	if (!hash)
-		return (NULL);
-
-	hash[0] = 0x67452301;
-	hash[1] = 0xEFCDAB89;
-	hash[2] = 0x98BADCFE;
-	hash[3] = 0x10325476;
-
-	uint64_t	totalReadBytes = 0;
-	char		bufferIndex = 0;
-	char		readBytes = 0;
-	uint8_t		buffer[64];
-
-	do {
-		readBytes = read(fd, buffer + bufferIndex, 64 - bufferIndex);
-		if (readBytes < 0) {
-			free(hash);
-			return (NULL);
-		}
-		if (print_fd > 0 && readBytes > 0)
-			write(print_fd, buffer + bufferIndex, readBytes); // todo: else return as string to print without '\n' (use realloc until max size reached)
-		bufferIndex += readBytes;
-
-		if (bufferIndex == 64) {
-			digest_loop((uint32_t *)buffer, hash);
-			totalReadBytes += bufferIndex;
-			bufferIndex = 0;
-		} else if (readBytes == 0) {
-			uint8_t	*new_msg;
-			uint64_t new_len = pad_msg(buffer, bufferIndex, &new_msg, totalReadBytes + bufferIndex);
-			if (!new_msg) {
-				free(hash);
-				return (NULL);
-			}
-			for (uint64_t i = 0; i < new_len; i += 64)
-				digest_loop((uint32_t *)(new_msg + i), hash);
-			free(new_msg);
-		}
-	} while (readBytes > 0);
-
-	return (hash);
+	return ssl_32_fd(fd, print_fd, &digest_loop, 4, &md5_hash_constant_filler, 0);
 }

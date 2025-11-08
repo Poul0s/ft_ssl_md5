@@ -1,10 +1,12 @@
 CC			= cc
 
-CFLAGS		= 
+CFLAGS		= -g
 
 SRCS		=	main.c \
 				get_flags.c \
-				algorithm/md5/ft_ssl_md5.c
+				algorithm/tools.c \
+				algorithm/md5/ft_ssl_md5.c \
+				algorithm/sha2/ft_ssl_sha2.c \
 
 NAME		=	ft_ssl
 
