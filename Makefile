@@ -10,19 +10,29 @@ NAME		=	ft_ssl
 
 OBJS		=	$(addprefix .build/, $(SRCS:.c=.o))
 
+LFT_DIR		=	libs/libft
+
+LFT			=	$(LFT_DIR)/libft.a
+
+LIBS		=	-L$(LFT_DIR) -lft
+
 all: $(NAME)
 
-$(NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $@
+$(LFT):
+	make -C $(LFT_DIR)
+
+$(NAME): $(LFT) $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -o $@
 
 .build/%.o: %.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -Ilibs -c $< -o $@
 
 clean:
 	rm -rf $(OBJS)
 
 fclean: clean
+	make -C $(LFT_DIR) fclean
 	rm -rf $(NAME)
 
 re: fclean all

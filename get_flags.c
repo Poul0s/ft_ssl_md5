@@ -6,22 +6,17 @@
 /*   By: psalame <psalame@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/01 15:58:52 by psalame           #+#    #+#             */
-/*   Updated: 2025/11/07 23:18:27 by psalame          ###   ########.fr       */
+/*   Updated: 2025/11/08 12:37:55 by psalame          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ssl.h"
 
-#include <string.h> // todo rm
+#include <unistd.h>
+#include "libft/header/ft_string.h"
 
 int	get_flags(int ac, char **av, int *optind)
 {
-	/// parse flags from (av + *optind) until:
-	/// 1) non-flag argument is found V
-	/// 2) all arguments are parsed V
-	/// 3) an unknown flag is found V
-	/// 4) arg is '-' or '--' so read stdin V
-	/// 5) found -s flag so next argument is the sum argument V
 	const char flagsList[][2] = {
 		{'p', FLAG_ECHO},
 		{'q', FLAG_QUIET},
@@ -49,9 +44,9 @@ int	get_flags(int ac, char **av, int *optind)
 				}
 			}
 			if (!found) {
-				write(2, av[0], strlen(av[0])); // todo use ft_strlen
+				write(2, av[0], ft_strlen(av[0]));
 				write(2, ": ", 2);
-				write(2, av[1], strlen(av[1])); // todo use ft_strlen
+				write(2, av[1], ft_strlen(av[1]));
 				write(2, ": invalid option -- '", 21);
 				write(2, &current[i], 1);
 				write(2, "'\n", 2);

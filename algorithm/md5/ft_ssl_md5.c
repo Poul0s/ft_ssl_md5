@@ -6,13 +6,14 @@
 /*   By: psalame <psalame@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/07 16:19:07 by psalame           #+#    #+#             */
-/*   Updated: 2025/11/07 21:44:16 by psalame          ###   ########.fr       */
+/*   Updated: 2025/11/08 12:39:00 by psalame          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ssl_md5.h"
 #include <stdlib.h>
 #include <unistd.h>
+#include "libft/header/libft.h"
 
 static char s[] = {
 	 7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,
@@ -165,7 +166,7 @@ uint32_t	*ft_ssl_md5(uint8_t *msg, uint64_t len)
 }
 
 #include <stdio.h>
-uint32_t	*ft_ssl_md5_fd(int fd)
+uint32_t	*ft_ssl_md5_fd(int fd, int print_fd)
 {
 	uint32_t	*hash = malloc(4 * sizeof(uint32_t));
 	if (!hash)
@@ -187,6 +188,8 @@ uint32_t	*ft_ssl_md5_fd(int fd)
 			free(hash);
 			return (NULL);
 		}
+		if (print_fd > 0 && readBytes > 0)
+			write(print_fd, buffer + bufferIndex, readBytes); // todo: else return as string to print without '\n' (use realloc until max size reached)
 		bufferIndex += readBytes;
 
 		if (bufferIndex == 64) {
