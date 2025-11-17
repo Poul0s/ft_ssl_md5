@@ -6,7 +6,7 @@
 /*   By: psalame <psalame@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/07 21:10:22 by psalame           #+#    #+#             */
-/*   Updated: 2025/11/17 10:06:22 by psalame          ###   ########.fr       */
+/*   Updated: 2025/11/17 11:14:59 by psalame          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,23 +63,30 @@ int	main(int ac, char **av) {
 	void	*(*algorithm)(uint8_t *msg, uint64_t len);
 	void	*(*algorithm_fd)(int fd, int print_fd);
 	int		hash_size;
+	struct s_ssl_algos algos[] = {
+		{"md5", (void *(*)(uint8_t *, uint64_t))&ft_ssl_md5, (void *(*)(int, int))&ft_ssl_md5_fd, 4},
+		{"sha256", (void *(*)(uint8_t *, uint64_t))&ft_ssl_sha256, (void *(*)(int, int))&ft_ssl_sha256_fd, 8},
+		{0, 0, 0, 0}
+	};
 	int		optind = 2;
 
 	clean_exec_name(av[0]);
 	if (ac == 1) {
-		ft_printf("usage: %s command [flags] [file/string]\n", av[0]); // todo remove ./ (path of executable)
+		ft_printf("usage: %s command [flags] [file/string]\n", av[0]);
 		return 0;
 	}
 
-	if (ft_strncmp(av[1], "md5", 4) == 0) {
-		algorithm = (void *(*)(uint8_t *, uint64_t))&ft_ssl_md5;
-		algorithm_fd = (void *(*)(int, int))&ft_ssl_md5_fd;
-		hash_size = 4;
-	} else if (ft_strncmp(av[1], "sha256", 7) == 0) {
-		algorithm = (void *(*)(uint8_t *, uint64_t))&ft_ssl_sha256;
-		algorithm_fd = (void *(*)(int, int))&ft_ssl_sha256_fd;
-		hash_size = 8;
-	} else {
+	algorithm = NULL;
+	for (int i = 0; algos[i].name != 0; i++) {
+		if (ft_strncmp(av[1], algos[i].name, ft_strlen(algos[i].name) + 1) == 0) {
+			algorithm = algos[i].algo;
+			algorithm_fd = algos[i].algo_fd;
+			hash_size = algos[i].hash_size;
+			break;
+		}
+	}
+
+	if (algorithm == NULL) {
 		ft_dprintf(2, "%s: Error: '%s' is an invalid command.\n\nCommands:\nmd5\nsha256\n\nFlags:\n-p -q -r -n\n", av[0], av[1]);
 		return 1;
 	}

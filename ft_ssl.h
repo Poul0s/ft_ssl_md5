@@ -6,7 +6,7 @@
 /*   By: psalame <psalame@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/07 21:58:44 by psalame           #+#    #+#             */
-/*   Updated: 2025/11/08 11:48:16 by psalame          ###   ########.fr       */
+/*   Updated: 2025/11/17 11:12:26 by psalame          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,13 @@ enum flags {
 	// ...
 	
 	UNKNOWN_FLAG	=	1 << 5
+};
+
+struct s_ssl_algos {
+	const char	*name;
+	void		*(*algo)(uint8_t *, uint64_t);
+	void		*(*algo_fd)(int, int);
+	int			hash_size;
 };
 
 int	get_flags(int ac, char **av, int *optind);
