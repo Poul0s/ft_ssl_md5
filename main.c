@@ -6,7 +6,7 @@
 /*   By: psalame <psalame@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/07 21:10:22 by psalame           #+#    #+#             */
-/*   Updated: 2025/11/08 15:49:09 by psalame          ###   ########.fr       */
+/*   Updated: 2025/11/17 10:06:22 by psalame          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,8 @@ int	main(int ac, char **av) {
 		uint32_t *hash = (*algorithm_fd)(0, 1 + ((flags & FLAG_QUIET) == 0));
 		if (!(flags & FLAG_QUIET))
 			ft_putstr_fd("\")= ", 1);
+		else
+			ft_putchar_fd('\n', 1);
 		if (!hash) {
 			if (!(flags & FLAG_QUIET))
 				ft_putchar_fd('\n', 1);
