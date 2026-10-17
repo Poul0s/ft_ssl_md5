@@ -42,7 +42,7 @@ static uint32_t K[] = {
 };
 
 
-static uint32_t F(uint32_t B, uint32_t C, uint32_t D, char i)
+static uint32_t F(uint32_t B, uint32_t C, uint32_t D, int i)
 {
 	if (i < 16)
 		return (B & C) | ((~B) & D);
@@ -54,7 +54,7 @@ static uint32_t F(uint32_t B, uint32_t C, uint32_t D, char i)
 		return C ^ (B | (~D));
 }
 
-static uint32_t	red_box(uint32_t x, char i, uint32_t B)
+static uint32_t	red_box(uint32_t x, int i, uint32_t B)
 {
 	return rotate_left((x + K[i]), s[i]) + B;
 }
@@ -66,9 +66,9 @@ static void	digest_loop(uint32_t *msg, uint32_t *hash)
 	uint32_t	C = hash[2];
 	uint32_t	D = hash[3];
 	uint32_t	combin;
-	char		j;
+	int			j;
 
-	for (char i = 0; i < 64; i++) {
+	for (int i = 0; i < 64; i++) {
 		if (i < 16)
 			j = i;
 		else if (i < 32)

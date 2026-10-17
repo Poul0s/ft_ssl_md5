@@ -78,7 +78,7 @@ uint32_t *ssl_32(uint8_t *msg,
 	free(new_msg);
 
 	if (endian) {
-		for (char i = 0; i < hash_size; i++) {
+		for (int i = 0; i < hash_size; i++) {
 			hash[i] = ((hash[i] >> 24) & 0x000000FF) |
 					  ((hash[i] >> 8) & 0x0000FF00) |
 					  ((hash[i] << 8) & 0x00FF0000) |
@@ -128,7 +128,7 @@ uint32_t	*ssl_32_fd(int fd,
 			return (NULL);
 		}
 		if (print_fd > 0 && readBytes > 0)
-			print_no_nl(buffer + bufferIndex, readBytes, print_fd);
+			print_no_nl((char *)buffer + bufferIndex, readBytes, print_fd);
 		bufferIndex += readBytes;
 
 		if (bufferIndex == 64) {
@@ -154,7 +154,7 @@ uint32_t	*ssl_32_fd(int fd,
 	} while (readBytes > 0);
 
 	if (endian) {
-		for (char i = 0; i < hash_size; i++) {
+		for (int i = 0; i < hash_size; i++) {
 			hash[i] = ((hash[i] >> 24) & 0x000000FF) |
 					  ((hash[i] >> 8) & 0x0000FF00) |
 					  ((hash[i] << 8) & 0x00FF0000) |

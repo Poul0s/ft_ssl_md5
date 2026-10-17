@@ -1,6 +1,6 @@
 CC			= cc
 
-CFLAGS		= -g
+CFLAGS		= -Wall -Wextra -Werror -MMD
 
 SRCS		=	main.c \
 				get_flags.c \
@@ -31,7 +31,7 @@ $(NAME): $(LFT) $(OBJS)
 	$(CC) $(CFLAGS) -Ilibs -c $< -o $@
 
 clean:
-	rm -rf $(OBJS)
+	rm -rf .build
 
 fclean: clean
 	make -C $(LFT_DIR) fclean
@@ -41,5 +41,5 @@ re: fclean all
 
 -include $(OBJS:.o=.d)
 
-.phony: all clean fclean re
+.PHONY: all clean fclean re
 

@@ -87,7 +87,7 @@ int	main(int ac, char **av) {
 	}
 
 	if (algorithm == NULL) {
-		ft_dprintf(2, "%s: Error: '%s' is an invalid command.\n\nCommands:\nmd5\nsha256\n\nFlags:\n-p -q -r -n\n", av[0], av[1]);
+		ft_dprintf(2, "%s: Error: '%s' is an invalid command.\n\nCommands:\nmd5\nsha256\n\nFlags:\n-p -q -r -s\n", av[0], av[1]);
 		return 1;
 	}
 
